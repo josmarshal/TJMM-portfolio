@@ -1,113 +1,45 @@
-// Thomas Marshal Portfolio — App JS
-// Handles nav scroll, animations, link verification, and interactivity
+// Simple interactive effects for the portfolio website
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    // =============================================
-    // 1. STICKY NAV: add shadow/bg on scroll
-    // =============================================
-    const header = document.getElementById('header');
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 40) {
-            header.style.background = 'rgba(5, 7, 15, 0.96)';
-            header.style.boxShadow = '0 4px 30px rgba(0,0,0,0.4)';
-        } else {
-            header.style.background = 'rgba(5, 7, 15, 0.75)';
-            header.style.boxShadow = 'none';
-        }
+    // 1. Dynamic Glow Position Shift on Card Hover
+    const cards = document.querySelectorAll(".project-card");
+    
+    cards.forEach(card => {
+        card.addEventListener("mousemove", (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left; // x position within the element
+            const y = e.clientY - rect.top;  // y position within the element
+            
+            const glow = card.querySelector(".card-glow");
+            if (glow) {
+                glow.style.top = `${y - rect.height}px`;
+                glow.style.left = `${x - rect.width}px`;
+            }
+        });
     });
 
-    // =============================================
-    // 2. ACTIVE NAV LINK on scroll
-    // =============================================
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    const updateActiveLink = () => {
-        let current = '';
-        sections.forEach(section => {
-            if (window.scrollY >= section.offsetTop - 120) {
-                current = section.getAttribute('id');
-            }
-        });
-        navLinks.forEach(link => {
-            link.style.color = '';
-            if (link.getAttribute('href') === `#${current}`) {
-                link.style.color = '#60a5fa';
-            }
-        });
+    // 2. Smooth reveal transitions for project cards
+    const observerOptions = {
+        threshold: 0.15,
+        rootMargin: "0px 0px -50px 0px"
     };
 
-    window.addEventListener('scroll', updateActiveLink);
-
-    // =============================================
-    // 3. SCROLL REVEAL ANIMATION (all sections)
-    // =============================================
-    const revealElements = document.querySelectorAll(
-        '.project-card, .skill-card, .cred-card, .contact-item-row, .hero-stats, .stat'
-    );
-
-    const revealObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry, i) => {
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
             if (entry.isIntersecting) {
-                setTimeout(() => {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }, i * 60);
-                revealObserver.unobserve(entry.target);
+                entry.target.style.opacity = "1";
+                entry.target.style.transform = "translateY(0)";
+                observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    }, observerOptions);
 
-    revealElements.forEach((el, i) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(24px)';
-        el.style.transition = `opacity 0.6s ease ${i * 0.04}s, transform 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 0.04}s`;
-        revealObserver.observe(el);
+    cards.forEach((card, index) => {
+        card.style.opacity = "0";
+        card.style.transform = "translateY(20px)";
+        card.style.transition = `all 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.1}s`;
+        observer.observe(card);
     });
 
-    // =============================================
-    // 4. MOUSE-TRACK GLOW on project cards
-    // =============================================
-    document.querySelectorAll('.project-card').forEach(card => {
-        card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
-            card.style.setProperty('--mouse-x', `${x}%`);
-            card.style.setProperty('--mouse-y', `${y}%`);
-        });
-        card.addEventListener('mouseleave', () => {
-            card.style.setProperty('--mouse-x', '50%');
-            card.style.setProperty('--mouse-y', '50%');
-        });
-    });
-
-    // =============================================
-    // 5. SMOOTH SCROLL for all anchor links
-    // =============================================
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
-        link.addEventListener('click', (e) => {
-            const target = document.querySelector(link.getAttribute('href'));
-            if (target) {
-                e.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-
-    // =============================================
-    // 6. LINK HEALTH CHECK (console warning only)
-    // =============================================
-    const externalLinks = document.querySelectorAll('a[target="_blank"]');
-    externalLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        if (!href || href === '#' || href === '') {
-            console.warn('⚠️ Empty or broken external link detected:', link);
-            link.style.opacity = '0.5';
-            link.title = 'Link unavailable';
-        }
-    });
-
-    console.log(`✅ Thomas Marshal Portfolio loaded. ${externalLinks.length} external links found.`);
+    console.log("Thomas Marshal Systems Portfolio Loaded Successfully.");
 });
